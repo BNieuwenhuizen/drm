@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2011 Intel Corporation
  *
@@ -404,6 +405,56 @@ extern "C" {
  *   tiles) or right-to-left (odd rows of 4k tiles).
  */
 #define DRM_FORMAT_MOD_BROADCOM_VC4_T_TILED fourcc_mod_code(BROADCOM, 1)
+
+/*
+ * AMD GFX6-GFX8 tiling modes.
+ *
+ * --- Tile mode --
+ *  array mode        : bits 0..3
+ *  micro tile mode   : bits 4..6
+ *  pipe config       : bits 7..11
+ *
+ * -- Macro tile mode --
+ *  bank width        : bits 12..13
+ *  bank height       : bits 14..15
+ *  macro tile aspect : bits 16..17
+ *  num banks         : bits 18..19
+ *
+ * We have 1 extra bits for the micro tile mode, as GFX6 and GFX7+ have 1
+ * different value there. The values are
+ *   - depth           : 0
+ *   - displayable     : 1
+ *   - thin            : 2
+ *   - thick (GFX6)    : 3
+ *   - rotated (GFX7+) : 4
+ *
+ * This is missing needed fields for multisample images.
+ */
+#define DRM_FORMAT_MOD_AMD_GFX8_TILING(array_mode, micro_tile_mode, pipe_config, bank_width, bank_height, macro_tile_aspect, num_banks) \
+        fourcc_mod_code(AMD, (0ULL << 48) | \
+                             (array_mode << 0) | \
+                             (micro_tile_mode << 4) | \
+                             (pipe_config << 7) | \
+                             (bank_width << 12) | \
+                             (bank_height << 14) | \
+                             (macro_tile_aspect << 16) | \
+                             (num_banks << 18))
+
+
+#define DRM_FORMAT_MOD_AMD_GFX8_1D_TILED(array_mode, micro_tile_mode) \
+        DRM_FORMAT_MOD_AMD_GFX8_TILING(array_mode, micro_tile_mode, 0, 0, 0, 0, 0)
+
+/*
+ * AMD GFX9 tiling modes.
+ *
+ * The swizzle_mode is the most important modifier which implies the kind of
+ * tiling. The other parameters are from the GB_ADDR_CONFIG, which are meant
+ * to determine whether GPUs are compatible.
+ *
+ * swizzle mode         : bits 0..4
+ */
+#define DRM_FORMAT_MOD_AMD_GFX9_TILED(swizzle_mode) \
+        fourcc_mod_code(AMD, (1ULL << 48) | ((swizzle_mode) & 0x1F))
 
 #if defined(__cplusplus)
 }
